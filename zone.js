@@ -1,7 +1,8 @@
 var gpio=require('wpi-gpio');
 
 //Constants
-var safetyTimeout = 15000; //15 seconds for demo purposes
+var standardTimeout = 1500; //15 seconds for demo purposes
+var safetyTimeout = 2500; //15 seconds for demo purposes
 
 module.exports = Zone;
 
@@ -13,14 +14,13 @@ function Zone(n){
 	gpio.mode(this._pin, 'out');
 }
 
-
 Zone.prototype.on = function(){
 	if(this._running){
 		console.log('Already running Zone ' + this._pin);
 		return;
 	}
 	gpio.write(this._pin, 1);
-	console.log('Zone ' + this._pin + ' on.');
+	console.log('zone ' + this._pin + ' on.');
 	this._running = true;
 
 	//Set a safety off
@@ -28,13 +28,28 @@ Zone.prototype.on = function(){
 }
 
 Zone.prototype.off = function(){
+	//Clear any safety
+	clearTimeout(this._safety);
+
 	gpio.write(this._pin, 0);
 	console.log('Zone ' + this._pin + ' off.');
 	this._running = false;
 
-	//Clear the safety
-	clearTimeout(this._safety);
 }
+
+//We'll promise to resolve once we've turned this zone back off
+Zone.prototype.run = function(){
+	var self = this;
+	return new Promise(function(resolve){
+
+		self.on();
+		this._safety = setTimeout(function(){
+			self.off();
+			resolve();
+		}.bind(this), standardTimeout);		
+	});
+};
+
 
 Zone.prototype.print = function(){
 	return 'Zone' + this_pin;
