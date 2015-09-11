@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "later": "^1.1.9",
     "wpi-gpio": "^0.3.0"
   }
 }
